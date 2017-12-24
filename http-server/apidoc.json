@@ -1,0 +1,9 @@
+{
+  "name": "AutoFeeder api document",
+  "version": "0.0.0",
+  "title": "AutoFeeder api document",
+  "sampleUrl": "http://localhost:3000",
+  "template": {
+    "forceLanguage": "en"
+  }
+}
