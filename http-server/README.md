@@ -12,3 +12,6 @@ eslint:
 
 run `npm run eslint` to lint all .js files in src
 
+Windows Environment:
+
+run '.\node_modules\.bin\cross-env [your path]=[your variable] npm start' in Windows environment
