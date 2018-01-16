@@ -1,8 +1,19 @@
 const http = require('http')
 const path = require('path')
 const fs = require('fs')
-const qs = require('querystring')
+const config = require('./config')
 const port = process.env.PORT || 3000
+/**
+ * boots, load files
+ */
+config.bootSequence.forEach((boot) => {
+  const bootPath = path.join(config.workDIR, boot)
+  require(bootPath)
+})
+
+/**
+ * routing
+ */
 const routesDir = path.join(__dirname, 'routes')
 const handlerNames = fs.readdirSync(routesDir)
 if (!handlerNames.length) {
@@ -28,25 +39,27 @@ handlerNames.forEach((name) => {
   }
 })
 
-const server = http.createServer((req, res) => {
-  const route = /(^\/[\w/\-\d]+)/.exec(req.url)[0]
-  const handler = routeHandlers[req.method][route]
-  //if request is 'GET' or 'DELETE' then parse queystring
-  if (['GET', 'DELETE'].indexOf(req.method) !== -1) {
-    const queryString = req.url.replace(`${route}?`, '')
-    const query = qs.parse(queryString)
-    req.query = query
-  }
-  /**
-  * Todo:
-  * I shall also handle the request body here
-  */
+function routeHandle(req, res) {
+  const handler = routeHandlers[req.method][req.route]
   if (!handler) {
-    res.statusCode = 404
-    res.statusMessage = '404 Not found'
-    res.end('404 Not found')
+    res.throw404()
   } else {
     handler(req, res)
+  }
+}
+
+const server = http.createServer((req, res) => {
+  req.parseUrl()
+  if (req.method !== 'GET') {
+    req.fetchBody()
+      .then(() => {
+        routeHandle(req, res)
+      })
+      .catch(() => {
+        res.throw400
+      })
+  } else {
+    routeHandle(req, res)
   }
 })
 
